@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import requests
 
 def init():
     config_dir = Path.home() / ".config" / "velo"
@@ -12,15 +12,37 @@ def init():
     if config_fichier.exists():
         print(f"La configuration existe déjà : {config_fichier}")
     else:
-        config = """network:
-  name: V'Lille
-  gbfs_url: https://media.ilevia.fr/opendata/gbfs.json
-
-data:
-  folder: ~/.local/share/velo
-"""
-
-        config_fichier.write_text(config, encoding="utf-8")
         print(f"Configuration créée : {config_fichier}")
 
-    print(f"Dossier de données créé : {data_dir}")
+    print(f"Dossier de données créé : {data_dir}/")
+
+    url = "https://media.ilevia.fr/opendata/"    
+    data = [
+        "system_information.json",
+        "station_information.json",
+        "vehicle_types.json"
+    ]
+
+    nb_stations = 0
+    connexion_ok = True
+
+    for donnees in data:
+        try:
+            reponse = requests.get(url + donnees)
+            reponse.raise_for_status()
+
+            (data_dir / donnees).write_text(reponse.text, encoding='utf-8')
+            if donnees == "station_information.json":
+                donnees_json = reponse.json()
+                nb_stations = len(donnees_json["data"]["stations"])
+
+        except Exception:
+            connexion_ok = False
+
+    if connexion_ok:
+        print(f"Connexion à V'Lille : OK ({nb_stations} stations)")
+    else:
+        print("Echec de la connexion à V'Lille")
+
+
+
