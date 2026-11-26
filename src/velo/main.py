@@ -25,7 +25,6 @@ def main():
     if config_fichier.exists() and not args.force:
         print(f"La configuration existe déjà : {config_fichier}")
     else:
-        config_fichier.write_text(contenu_config, encoding="utf-8")
         print(f"Configuration créée : {config_fichier}")
 
     print(f"Dossier de données créé : {data_dir}/")
